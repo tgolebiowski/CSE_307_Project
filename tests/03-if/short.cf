@@ -1,0 +1,9 @@
+int a;
+int b;
+
+a = 1;
+
+if (a == 1 || b == 5)
+  print_str("hi\n");
+if (! (!(a == 1) && b == 2) )
+  print_str("hi\n");
