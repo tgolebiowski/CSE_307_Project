@@ -2,15 +2,15 @@ open Ast;;
 open Env;;
 open Store;;
 
-let rec allocateSymTable (table:symTable):symTable =
-match table with
-|[]->[] |
-(str,Var vEntry)::xz-> ( str, Var {vEntry with loc = vEntry.loc+1} ) :: allocateSymTable(xz);;
+let rec allocateSymbol (table:symTable):symTable =
+match table with |
+[]->[] |
+(strn,Var vEntry)::xz -> (strn, Var{vEntry with loc = vEntry.loc+1})::allocateSymbol(xz);;
 
 let rec allocateMem (env:environment) : environment = 
-match env with
-|[]->[] |
-[symTable::xz]->allocateSymTable(symTable) :: allocateMem(xz);;
+match env with | 
+[]->[] |
+(symTable::xz)->allocateSymbol(symTable) :: allocateMem(xz);; 
 
 (* eval_expr and eval_cond don't return a store, but you might have to modify
 that because in full C-flat they do have side effets (pre- and post-increment,
@@ -60,6 +60,11 @@ let rec eval_stmt (stmt:stmt) (ps:proc_state) (env:environment) (store:store) : 
     print_string (Str.global_replace (Str.regexp "\\\\n") "\n" s); 
     (* Escaping characters here because it's not done in the parser *)
     (Next, ps, store)
-| List (stmt1::stmts) -> eval_stmt stmt1 ps env store
+| List (stmt1::stmts) -> eval_stmt stmt1 ps env store; (Next, ps, store)
+
+and eval_stmt_list(stmts:stmt list) (ps:proc_state) (env:environment) (store:store) : (stmtEvalRes * proc_state * store) = match stmts with
+  | x::[] -> eval_stmt x ps env store;;
+  | x::xs -> eval_stmt x ps env store; eval_stmt_list xs ps env store
+
   (* TODO: complete this case so that all statements in the list evaluated *)
 ;;
